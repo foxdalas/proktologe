@@ -28,7 +28,7 @@ func (p *PortScan) scan(host string) *Ports {
 	if found {
 		return data.(*Ports)
 	}
-	ps := portscanner.NewPortScanner(host, 500*time.Millisecond, 100)
+	ps := portscanner.NewPortScanner(host, 200*time.Millisecond, 2000)
 	openPorts := &Ports{
 		Address: host,
 		Open:    ps.GetOpenedPort(1, 65535),
