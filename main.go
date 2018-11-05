@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/patrickmn/go-cache"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -21,6 +22,7 @@ type Ports struct {
 
 type PortScan struct {
 	cache *cache.Cache
+	mx    *sync.Mutex
 }
 
 func (p *PortScan) scan(host string) *Ports {
@@ -28,6 +30,8 @@ func (p *PortScan) scan(host string) *Ports {
 	if found {
 		return data.(*Ports)
 	}
+	p.mx.Lock()
+	defer p.mx.Unlock()
 	ps := portscanner.NewPortScanner(host, 200*time.Millisecond, 2000)
 	openPorts := &Ports{
 		Address: host,
@@ -58,6 +62,7 @@ func (p *PortScan) getScanList(c echo.Context) error {
 func main() {
 	p := &PortScan{
 		cache: cache.New(20*time.Minute, 25*time.Minute),
+		mx:    new(sync.Mutex),
 	}
 
 	e := echo.New()
